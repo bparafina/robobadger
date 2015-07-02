@@ -32,11 +32,15 @@ def Getlogs():
         for lf in log_files:
             log_local_fn = time + '-' + lf['LogFileName'].split('/')[-1]
             mkr = u'0'
+            ## speed things up by checking for dupes
             if os.path.isfile(log_local_fn):
                 print 'File Exists... skipping ' + log_local_fn
             else:
+                f = open(log_local_fn, 'w+')
                 while mkr is not False:
-                    f = open(log_local_fn, 'w+')
+                    ## open the file after you've checked
+
+
                     print mkr
                     print 'mkr:{2} | {0}MB | {1}'.format(lf['Size'] / 1024 / 1024, lf['LogFileName'], mkr)
                     fr = conn.download_db_log_file_portion(db_identifier, lf['LogFileName'], mkr)
