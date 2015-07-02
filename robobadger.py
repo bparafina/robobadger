@@ -12,7 +12,6 @@ conn = boto.rds2.connect_to_region('us-east-1',aws_access_key_id=os.getenv('aws_
 
 log = conn.describe_db_log_files(db_identifier)
 log_files = log['DescribeDBLogFilesResponse']['DescribeDBLogFilesResult']['DescribeDBLogFiles']
-log_files.sort(key=lambda r: r['LastWritten'], reverse=True)
 time = datetime.today().strftime('%Y-%m-%dT%H%M%S')
 
 
