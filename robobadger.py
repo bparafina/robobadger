@@ -15,17 +15,14 @@ conn = boto.rds2.connect_to_region('us-east-1',aws_access_key_id=os.getenv('aws_
 ## get the logs, set the time
 log = conn.describe_db_log_files(db_identifier)
 log_files = log['DescribeDBLogFilesResponse']['DescribeDBLogFilesResult']['DescribeDBLogFiles']
-time = datetime.today().strftime('%Y-%m-%dT%H')
+time = datetime.today().strftime('%Y-%m-%dT')
 
 ## this needs to not be dumb
 def Buildindex():
     for lf in log_files:
-        li = lf['LogFileName']
-        li = li[26:]
-        print li
-        #while range(li) == '24':
-        #    print 'yay'
-
+        output.add(lf)
+        print output
+    return(output)
 ## Retrieve Logs
 def Getlogs():
     try:
@@ -57,24 +54,24 @@ def Getlogs():
     ## ignore the fact that there are logs that don't exist
     except (JSONResponseError):
         pass
-    return (log_local_fn)
 
-def Processlogs(log_local_fn):
-    for file in os.listdir('.'):
-        if fnmatch.fnmatch(file, log_local_fn):
-            log_local_index.insert(file)
-            print file
-    log_local_fn_merged = log_local_fn[:]
-    log_local_fn_raw = log_local_fn[:-2] + '*'
-    merge_log = 'cat {0} > {1}'.format(log_local_fn_raw, log_local_fn_merged)
-    subprocess.call(merge_log, shell=True)
+def Processlogs():
+    for lf in log_files:
+#        log_local_fn = time + '-' + lf['LogFileName'].split('/')[-1]
+#        log_local_fn_merged = log_local_fn[:-3]
+#        log_local_fn_raw = log_local_fn[:-2] + '*'
+#        log_files_lf = lf['LogFileName'].split('/')[-1]
+        print log_files_lf
+#        log_local_list = set(log_files_lf).elems
+#        print log_local_list
 
+#        merge_log = 'cat {0} > {1}'.format(log_local_fn_raw, log_local_fn_merged)
+#        subprocess.call(merge_log, shell=True)
+#        log_local_fn_out = log_local_fn + '.html'
+#        badger = '/usr/local/bin/pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_local_fn, log_local_fn_out)
+#        subprocess.call(badger, shell=True)
 
-    log_local_fn_out = log_local_fn + '.html'
-    badger = '/usr/local/bin/pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_local_fn, log_local_fn_out)
-    subprocess.call(badger, shell=True)
 
 if __name__ == '__main__':
-    index()
     Getlogs()
     Processlogs()
