@@ -26,45 +26,43 @@ def index():
         for hour in len(lf):
             print hour
 
-def process(log_index):
+def Getlogs():
     for lf in log_files:
         log_local_fn = time + '-' + lf['LogFileName'].split('/')[-1]
         mkr = u'0'
         log_local_index =[]
         f = open(log_local_fn, 'w+')
-        try:
-            while mkr is not False:
-                print mkr
-                print 'mkr:{2} | {0}MB | {1}'.format(lf['Size'] / 1024 / 1024, lf['LogFileName'], mkr)
-                fr = conn.download_db_log_file_portion(db_identifier, lf['LogFileName'], mkr)
-                fpr = fr['DownloadDBLogFilePortionResponse']['DownloadDBLogFilePortionResult']
+        while mkr is not False:
+            print mkr
+            print 'mkr:{2} | {0}MB | {1}'.format(lf['Size'] / 1024 / 1024, lf['LogFileName'], mkr)
+            fr = conn.download_db_log_file_portion(db_identifier, lf['LogFileName'], mkr)
+            fpr = fr['DownloadDBLogFilePortionResponse']['DownloadDBLogFilePortionResult']
 
-                if fpr['LogFileData'] is not None:
-                    f.write(fpr['LogFileData'].encode('utf8'))
-                f.close()
-                if fpr['AdditionalDataPending']:
-                    mkr = fpr['Marker']
-                    f = open(log_local_fn, 'a')
-                    with warnings.catch_warnings():
-                        warnings.simplefilter('ignore')
-                else:
-                    mkr = False
-    #    for file in os.listdir('.'):
-    #        if fnmatch.fnmatch(file, log_local_fn):
-    #            log_local_index.insert(file)
-    #            print file
-    #    log_local_fn_merged = log_local_fn[:-3]
-    #    log_local_fn_raw = log_local_fn[:-2] + '*'
-    #    merge_log = 'cat {0} > {1}'.format(log_local_fn_raw, log_local_fn_merged)
-    #    subprocess.call(merge_log, shell=True)
-    #
-        except (SyntaxError):
-            pass
+            if fpr['LogFileData'] is not None:
+                f.write(fpr['LogFileData'].encode('utf8'))
+            f.close()
+            if fpr['AdditionalDataPending']:
+                mkr = fpr['Marker']
+                f = open(log_local_fn, 'a')
+            else:
+                mkr = False
 
-    #    log_local_fn_out = log_local_fn + '.html'
-    #    badger = '/usr/local/bin/pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_local_fn, log_local_fn_out)
-    #    subprocess.call(badger, shell=True)
+def Processlogs():
+    for file in os.listdir('.'):
+        if fnmatch.fnmatch(file, log_local_fn):
+            log_local_index.insert(file)
+            print file
+    log_local_fn_merged = log_local_fn[:-3]
+    log_local_fn_raw = log_local_fn[:-2] + '*'
+    merge_log = 'cat {0} > {1}'.format(log_local_fn_raw, log_local_fn_merged)
+    subprocess.call(merge_log, shell=True)
+
+
+    log_local_fn_out = log_local_fn + '.html'
+    badger = '/usr/local/bin/pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_local_fn, log_local_fn_out)
+    subprocess.call(badger, shell=True)
 
 if __name__ == '__main__':
     index()
-    process()
+    Getlogs()
+    Processlogs()
