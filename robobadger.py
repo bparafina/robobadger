@@ -16,7 +16,7 @@ conn = boto.rds2.connect_to_region('us-east-1',aws_access_key_id=os.getenv('aws_
 ## get the logs, set the time
 log = conn.describe_db_log_files(db_identifier)
 log_files = log['DescribeDBLogFilesResponse']['DescribeDBLogFilesResult']['DescribeDBLogFiles']
-time = datetime.today().strftime('%Y-%m-%dT')
+time = datetime.today().strftime('%Y-%m-%d')
 
 
 def Getlogs():
@@ -31,7 +31,7 @@ def Getlogs():
                 f = open(log_local_fn, 'w+')
                 while mkr is not False:
                     ## open the file after you've checked
-                    print 'mkr:{2} | {0}MB | {1} '.format(lf['Size'] / 1024 / 1024, lf['LogFileName'], mkr) + '\r',
+                    print '    mkr:{2} | {0}MB | {1} '.format(lf['Size'] / 1024 / 1024, lf['LogFileName'], mkr) + '\r',
                     fr = conn.download_db_log_file_portion(db_identifier, lf['LogFileName'], mkr)
                     fpr = fr['DownloadDBLogFilePortionResponse']['DownloadDBLogFilePortionResult']
 
@@ -76,7 +76,6 @@ def Processlogs():
                 subprocess.call(badger, shell=True)
     except:
         pass
-    print log_list
 def Cleanlogs():
     ## this is redundancy.. kind of irritating
     for lf in tqdm(log_files):
