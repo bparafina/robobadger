@@ -7,6 +7,7 @@ from boto import rds2
 import glob
 import warnings
 import fnmatch
+from tqdm import *
 
 ## set connection
 db_identifier = 'stage'
@@ -20,20 +21,17 @@ time = datetime.today().strftime('%Y-%m-%dT')
 
 def Getlogs():
     try:
-        for lf in log_files:
+        for lf in tqdm(log_files):
             log_local_fn = time + '-' + lf['LogFileName'].split('/')[-1]
             mkr = u'0'
             ## speed things up by checking for dupes
             if os.path.isfile(log_local_fn):
-                print 'File Exists... skipping ' + log_local_fn
+                print 'File Exists... skipping ' + log_local_fn + '\r',
             else:
                 f = open(log_local_fn, 'w+')
                 while mkr is not False:
                     ## open the file after you've checked
-
-
-                    print mkr
-                    print 'mkr:{2} | {0}MB | {1}'.format(lf['Size'] / 1024 / 1024, lf['LogFileName'], mkr)
+                    print 'mkr:{2} | {0}MB | {1} '.format(lf['Size'] / 1024 / 1024, lf['LogFileName'], mkr) + '\r',
                     fr = conn.download_db_log_file_portion(db_identifier, lf['LogFileName'], mkr)
                     fpr = fr['DownloadDBLogFilePortionResponse']['DownloadDBLogFilePortionResult']
 
@@ -60,22 +58,35 @@ def Processlogs():
         ## get the uniques
     log_set = set(log_set)
     log_list = list(log_set)
-    print log_list[:]
     mkr = u'0'
     try:
-        for lg in log_list:
+        for lg in tqdm(log_list):
             log_merge = lg
             log_merge_name = log_merge + '.html'
             log_merge_wildcard = time + '-' + log_merge + '-*'
-            print log_merge_wildcard, log_merge
-            merge = 'cat {0} > {1}'.format(log_merge_wildcard, log_merge)
-            subprocess.call(merge, shell=True)
-            badger = '/usr/local/bin/pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_merge, log_merge_name)
-            subprocess.call(badger, shell=True)
+            if os.path.isfile(log_merge):
+                print 'File Exists... skipping ' + log_merge,
+            else:
+                merge = 'cat {0} > {1}'.format(log_merge_wildcard, log_merge)
+                subprocess.call(merge, shell=True)
+            if os.path.isfile(log_merge_name):
+                print 'File Exists... skipping ' + log_merge_name
+            else:
+                badger = 'pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_merge, log_merge_name)
+                subprocess.call(badger, shell=True)
     except:
         pass
-
+    print log_list
+def Cleanlogs():
+    ## this is redundancy.. kind of irritating
+    for lf in tqdm(log_files):
+        log_local_fn = time + '-' + lf['LogFileName'].split('/')[-1]
+        mkr = u'0'
+        for f in glob.glob(log_local_fn):
+            os.remove(f)
+    print 'Complete'
 
 if __name__ == '__main__':
     Getlogs()
     Processlogs()
+    Cleanlogs()
