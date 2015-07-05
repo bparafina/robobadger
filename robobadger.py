@@ -17,13 +17,7 @@ log = conn.describe_db_log_files(db_identifier)
 log_files = log['DescribeDBLogFilesResponse']['DescribeDBLogFilesResult']['DescribeDBLogFiles']
 time = datetime.today().strftime('%Y-%m-%dT')
 
-## this needs to not be dumb
-def Buildindex():
-    for lf in log_files:
-        output.add(lf)
-        print output
-    return(output)
-## Retrieve Logs
+
 def Getlogs():
     try:
         for lf in log_files:
@@ -56,20 +50,30 @@ def Getlogs():
         pass
 
 def Processlogs():
-    for lf in log_files:
-#        log_local_fn = time + '-' + lf['LogFileName'].split('/')[-1]
-#        log_local_fn_merged = log_local_fn[:-3]
-#        log_local_fn_raw = log_local_fn[:-2] + '*'
-#        log_files_lf = lf['LogFileName'].split('/')[-1]
-        print log_files_lf
-#        log_local_list = set(log_files_lf).elems
-#        print log_local_list
-
-#        merge_log = 'cat {0} > {1}'.format(log_local_fn_raw, log_local_fn_merged)
-#        subprocess.call(merge_log, shell=True)
-#        log_local_fn_out = log_local_fn + '.html'
-#        badger = '/usr/local/bin/pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_local_fn, log_local_fn_out)
-#        subprocess.call(badger, shell=True)
+    try:
+        log_set = []
+        for lf in log_files:
+            log_local_fn = lf['LogFileName'].split('/')[-1][:-3]
+            log_set.append(log_local_fn)
+    except:
+        pass
+        ## get the uniques
+    log_set = set(log_set)
+    log_list = list(log_set)
+    print log_list[:]
+    mkr = u'0'
+    try:
+        for lg in log_list:
+            log_merge = lg
+            log_merge_name = log_merge + '.html'
+            log_merge_wildcard = time + '-' + log_merge + '-*'
+            print log_merge_wildcard, log_merge
+            merge = 'cat {0} > {1}'.format(log_merge_wildcard, log_merge)
+            subprocess.call(merge, shell=True)
+            badger = '/usr/local/bin/pgbadger --prefix "%t:%r:%u@%d:[%p]:" {0} -o {1}'.format(log_merge, log_merge_name)
+            subprocess.call(badger, shell=True)
+    except:
+        pass
 
 
 if __name__ == '__main__':
