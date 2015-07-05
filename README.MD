@@ -3,3 +3,5 @@ Robobadger just wants to process logs. Robobadger wants to run as an automated j
 In my Jenkins job I then dump the reports into S3. I haven't figured out the rest yet.
 
 You'll need AWS keys of course to actually access the DBs in question
+
+Robobadger is structured to leverage the log file names from RDS. It works by rolling up a full days worth of logs (or max amount) into a single log file and then generates a report using pgbadger.
