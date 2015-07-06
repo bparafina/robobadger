@@ -10,7 +10,7 @@ import fnmatch
 from tqdm import *
 
 ## set connection
-db_identifier = 'stage'
+db_identifier = os.getenv('db_identifier')
 conn = boto.rds2.connect_to_region('us-east-1',aws_access_key_id=os.getenv('aws_access_key_id'),aws_secret_access_key=os.getenv('aws_secret_access_key'))
 
 ## get the logs, set the time
@@ -83,9 +83,9 @@ def Cleanlogs():
         mkr = u'0'
         for f in glob.glob(log_local_fn):
             os.remove(f)
-    print 'Complete'
 
 if __name__ == '__main__':
     Getlogs()
     Processlogs()
     Cleanlogs()
+    print 'Complete!'
