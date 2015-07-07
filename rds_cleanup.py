@@ -4,11 +4,12 @@ from boto import rds2
 import boto
 import datetime
 
-DAYS_EXPIRE = 4
+DAYS_EXPIRE = 7
 ## for future use to modularize script
 region = os.getenv('region')
 conn = boto.rds2.connect_to_region('us-east-1',aws_access_key_id=os.getenv('aws_access_key_id'),aws_secret_access_key=os.getenv('aws_secret_access_key'))
 
+## what does this do now...???
 def GetDBset():
     ## generate the dbset
     dbs = []
@@ -36,6 +37,7 @@ def Getsnapshots():
             acceptable_date = datetime.datetime.now() - delta_date
             datestr = re.search(r'\d{4}-\d{2}-\d{2}', snap_date).group()
             try:
+                ## shitty data made me do this
                 date_object = datetime.datetime.strptime(datestr, '%Y-%m-%d')
             except:
                 pass
